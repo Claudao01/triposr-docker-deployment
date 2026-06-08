@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  triposr-cpu:
+    image: local/triposr-cpu:latest
+    ports:
+      - "7860:7860"
+    volumes:
+      - hf_cache:/root/.cache/huggingface
+    networks:
+      - claudao_network
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 12g
+        reservations:
+          memory: 6g
+
+volumes:
+  hf_cache:
+
+networks:
+  claudao_network:
+    external: true
