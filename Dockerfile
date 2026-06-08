@@ -26,4 +26,4 @@ ENV GRADIO_SERVER_NAME=0.0.0.0
 
 EXPOSE 7860
 
-CMD ["python", "app.py"]
+CMD ["python", "gradio_app.py"]
