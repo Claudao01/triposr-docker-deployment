@@ -2,24 +2,25 @@ version: '3.8'
 
 services:
   triposr-cpu:
-    image: local/triposr-cpu:latest
+    image: ghcr.io/claudao01/triposr-docker-deployment:main
     ports:
-      - "7860:7860"
+      - "${PORT:-7860}:7860"
     volumes:
       - hf_cache:/root/.cache/huggingface
     networks:
-      - claudao_network
+      - custom_network
     deploy:
       replicas: 1
       resources:
         limits:
-          memory: 12g
+          memory: ${MEMORY_LIMIT:-12g}
         reservations:
-          memory: 6g
+          memory: ${MEMORY_RESERVATION:-6g}
 
 volumes:
   hf_cache:
 
 networks:
-  claudao_network:
+  custom_network:
+    name: ${NETWORK_NAME:-claudao_network}
     external: true

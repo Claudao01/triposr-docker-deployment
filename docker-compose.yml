@@ -7,10 +7,7 @@ services:
       - "${PORT:-7860}:7860"
     volumes:
       - hf_cache:/root/.cache/huggingface
-    networks:
-      - claudao_network
     deploy:
-      replicas: 1
       resources:
         limits:
           memory: ${MEMORY_LIMIT:-12g}
@@ -19,7 +16,3 @@ services:
 
 volumes:
   hf_cache:
-
-networks:
-  claudao_network:
-    external: true
