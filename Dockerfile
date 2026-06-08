@@ -19,7 +19,7 @@ RUN pip3 install --no-cache-dir torch torchvision torchaudio --index-url https:/
 
 # Install model dependencies and web interface
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir gradio
+RUN pip install --no-cache-dir gradio onnxruntime
 
 # Force Gradio to listen on all network interfaces
 ENV GRADIO_SERVER_NAME=0.0.0.0
