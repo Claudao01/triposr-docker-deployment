@@ -1,6 +1,6 @@
 # TripoSR Docker Deployment
 
-This repository provides a streamlined, CPU-only Docker deployment architecture for TripoSR. It is explicitly designed to facilitate the rapid generation of 3D models from single images in environments lacking CUDA-enabled GPUs.
+This repository provides a streamlined, **CPU-only Docker deployment** architecture for TripoSR. It is explicitly designed to facilitate the rapid generation of 3D models from single images in environments lacking CUDA-enabled GPUs.
 
 This project manages the containerization, continuous integration, and resource allocation to ensure TripoSR runs efficiently and safely on host machines without causing memory exhaustion.
 
