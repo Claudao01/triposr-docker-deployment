@@ -1,12 +1,12 @@
 FROM python:3.10-slim
 
 # Install bare-metal prerequisites and C++ compilers for torchmcubes and ONNX
+# Note: libgl1 is sufficient; libgl1-mesa-glx is obsolete in modern Debian
 RUN apt-get update && apt-get install -y \
     git \
     curl \
     wget \
     libgl1 \
-    libgl1-mesa-glx \
     libglib2.0-0 \
     libgomp1 \
     build-essential \
@@ -18,6 +18,10 @@ WORKDIR /app
 
 # Clone the official TripoSR repository
 RUN git clone https://github.com/VAST-AI-Research/TripoSR.git .
+
+# Upgrade setuptools as strictly recommended by the official TripoSR documentation
+# This prevents compilation errors when building torchmcubes without CUDA
+RUN pip install --no-cache-dir --upgrade setuptools
 
 # Install PyTorch optimized strictly for CPU
 RUN pip3 install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
