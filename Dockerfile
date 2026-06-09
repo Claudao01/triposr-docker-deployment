@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-# Install bare-metal prerequisites and C++ compilers for torchmcubes and ONNX
+# Install bare-metal prerequisites and C++ compilers
 # Note: libgl1 is sufficient; libgl1-mesa-glx is obsolete in modern Debian
 RUN apt-get update && apt-get install -y \
     git \
@@ -19,19 +19,22 @@ WORKDIR /app
 # Clone the official TripoSR repository
 RUN git clone https://github.com/VAST-AI-Research/TripoSR.git .
 
-# Upgrade setuptools as strictly recommended by the official TripoSR documentation
-# This prevents compilation errors when building torchmcubes without CUDA
+# Upgrade setuptools to prevent torchmcubes compilation errors (Official Recommendation)
 RUN pip install --no-cache-dir --upgrade setuptools
 
-# Install PyTorch optimized strictly for CPU
-RUN pip3 install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+# Pin PyTorch strictly to version 2.3.1 (CPU-only) 
+# This completely prevents 'float8_e8m0fnu' attribute errors caused by bleeding-edge torch updates
+RUN pip install --no-cache-dir torch==2.3.1+cpu torchvision==0.18.1+cpu torchaudio==2.3.1+cpu --index-url https://download.pytorch.org/whl/cpu
 
-# Overwrite outdated version locks to prevent dependency conflicts (e.g., huggingface-hub vs transformers)
-RUN sed -i 's/transformers==4.35.0/transformers>=4.40.0/' requirements.txt && \
-    sed -i 's/gradio/gradio>=4.44.1/' requirements.txt
+# DevOps Best Practice: Explicitly delete conflicting locks from upstream requirements
+RUN sed -i '/transformers/d' requirements.txt && \
+    sed -i '/gradio/d' requirements.txt
 
-# Install all model dependencies, web interface, and ONNX runtime in a single pass
-RUN pip install --no-cache-dir -r requirements.txt onnxruntime
+# Install dependencies and force stable, modern versions for transformers and gradio
+RUN pip install --no-cache-dir -r requirements.txt \
+    "transformers>=4.40.2" \
+    "gradio>=4.44.1" \
+    onnxruntime
 
 # Force Gradio to listen on all network interfaces inside the container
 ENV GRADIO_SERVER_NAME=0.0.0.0
