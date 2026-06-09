@@ -22,22 +22,27 @@ RUN git clone https://github.com/VAST-AI-Research/TripoSR.git .
 RUN pip install --no-cache-dir --upgrade setuptools
 
 # Pin PyTorch strictly to version 2.4.0 (CPU-only) 
-# Modern transformers require 'torch.float8_e8m0fnu', which was introduced in PyTorch 2.4.0
+# Provides 'torch.float8_e8m0fnu' required by modern transformers
 RUN pip install --no-cache-dir torch==2.4.0+cpu torchvision==0.19.0+cpu torchaudio==2.4.0+cpu --index-url https://download.pytorch.org/whl/cpu
 
 # DevOps Best Practice: Explicitly delete conflicting locks from upstream requirements
 RUN sed -i '/transformers/d' requirements.txt && \
     sed -i '/gradio/d' requirements.txt
 
-# Install dependencies and force stable, modern versions that are compatible with PyTorch 2.4.0
-# Gradio 4.44.1 completely resolves the 'localhost not accessible' Docker routing bug
+# Install dependencies and force stable, modern versions
+# Gradio 5.x explicitly fixes the 'bool is not iterable' Pydantic schema bug
 RUN pip install --no-cache-dir -r requirements.txt \
-    "transformers==4.44.2" \
-    "gradio==4.44.1" \
+    "transformers>=4.44.2" \
+    "gradio>=5.0.0" \
     onnxruntime
 
-# Force Gradio to listen on all network interfaces inside the Docker container
-ENV GRADIO_SERVER_NAME=0.0.0.0
+# Crucial Docker Network Fixes for Gradio:
+# 1. Listen on all external interfaces
+ENV GRADIO_SERVER_NAME="0.0.0.0"
+# 2. Fix the internal healthcheck ping (resolves 'localhost not accessible' crash)
+ENV GRADIO_LOCALHOST_IP="127.0.0.1"
+ENV NO_PROXY="localhost, 127.0.0.1, 0.0.0.0"
+ENV no_proxy="localhost, 127.0.0.1, 0.0.0.0"
 
 EXPOSE 7860
 
