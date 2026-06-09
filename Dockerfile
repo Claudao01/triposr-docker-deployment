@@ -28,6 +28,7 @@ RUN sed -i '/transformers/d' requirements.txt && \
 RUN pip install --no-cache-dir -r requirements.txt \
     "transformers==4.39.3" \
     "gradio>=5.0.0" \
+    "numpy<2" \
     onnxruntime
 
 # 4. Network configurations to bypass Docker proxy issues
