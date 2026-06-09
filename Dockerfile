@@ -1,7 +1,6 @@
 FROM python:3.10-slim
 
-# Install bare-metal prerequisites and C++ compilers
-# Note: libgl1 is sufficient; libgl1-mesa-glx is obsolete in modern Debian
+# Install bare-metal prerequisites for C++ compilation and ONNX parallel processing
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -19,25 +18,24 @@ WORKDIR /app
 # Clone the official TripoSR repository
 RUN git clone https://github.com/VAST-AI-Research/TripoSR.git .
 
-# Upgrade setuptools to prevent torchmcubes compilation errors
+# Upgrade setuptools to strictly prevent torchmcubes compilation errors
 RUN pip install --no-cache-dir --upgrade setuptools
 
-# Pin PyTorch strictly to version 2.3.1 (CPU-only)
-# This prevents 'float8_e8m0fnu' attribute errors caused by bleeding-edge torch updates
-RUN pip install --no-cache-dir torch==2.3.1+cpu torchvision==0.18.1+cpu torchaudio==2.3.1+cpu --index-url https://download.pytorch.org/whl/cpu
+# Freeze PyTorch to version 2.2.2 (CPU-only) 
+# This matches the exact era of the TripoSR release and prevents breaking changes from PyTorch 2.4+
+RUN pip install --no-cache-dir torch==2.2.2+cpu torchvision==0.17.2+cpu torchaudio==2.2.2+cpu --index-url https://download.pytorch.org/whl/cpu
 
-# DevOps Best Practice: Explicitly delete conflicting locks from upstream requirements
-RUN sed -i '/transformers/d' requirements.txt && \
-    sed -i '/gradio/d' requirements.txt
-
-# Install dependencies with STRICT VERSION PINNING to avoid breaking changes in bleeding-edge releases
-# Matching a stable matrix: PyTorch 2.3.1 + Transformers 4.41.2 + Gradio 4.44.1
+# Time-Freeze Architecture: 
+# 1. Install original requirements exactly as the authors intended.
+# 2. Inject 'onnxruntime' (missing in the original repo, required by rembg).
+# 3. Inject 'Jinja2==3.1.3' (Antidote: Fixes the 'unhashable type: dict' crash in Gradio 4.8.0).
+# 4. Inject 'huggingface-hub==0.20.3' (Antidote: Satisfies transformers 4.35 constraints without upgrading to 1.x).
 RUN pip install --no-cache-dir -r requirements.txt \
-    "transformers==4.41.2" \
-    "gradio==4.44.1" \
-    onnxruntime
+    onnxruntime \
+    Jinja2==3.1.3 \
+    huggingface-hub==0.20.3
 
-# Force Gradio to listen on all network interfaces inside the container
+# Force Gradio to listen on all network interfaces inside the Docker container
 ENV GRADIO_SERVER_NAME=0.0.0.0
 
 EXPOSE 7860
