@@ -7,10 +7,8 @@ services:
       - "${PORT:-7860}:7860"
     volumes:
       - hf_cache:/root/.cache/huggingface
-    # Legacy compatibility (Ensures resource limits in standalone Docker Compose V1)
-    mem_limit: ${MEMORY_LIMIT:-12g}
-    mem_reservation: ${MEMORY_RESERVATION:-6g}
-    # Modern compatibility (Used by Docker Swarm and Compose V2)
+      - u2net_cache:/root/.u2net
+      - torch_cache:/root/.cache/torch
     deploy:
       resources:
         limits:
@@ -20,3 +18,5 @@ services:
 
 volumes:
   hf_cache:
+  u2net_cache:
+  torch_cache:

@@ -6,7 +6,12 @@ services:
     ports:
       - "${PORT:-7860}:7860"
     volumes:
+      # Cache dos pesos da IA (TripoSR)
       - hf_cache:/root/.cache/huggingface
+      # Cache do modelo de remoção de fundo (Rembg/U2Net)
+      - u2net_cache:/root/.u2net
+      # Prevenção: Cache adicional para o PyTorch nativo
+      - torch_cache:/root/.cache/torch
     networks:
       - custom_network
     deploy:
@@ -19,8 +24,10 @@ services:
 
 volumes:
   hf_cache:
+  u2net_cache:
+  torch_cache:
 
 networks:
   custom_network:
-    name: ${NETWORK_NAME:-claudao_network}
+    name: ${NETWORK_NAME:-default_network}
     external: true
